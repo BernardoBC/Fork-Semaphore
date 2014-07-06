@@ -8,6 +8,7 @@
 #include <time.h>
 #include <semaphore.h> /* sem_open(), sem_destroy(), sem_wait().. */
 #include <fcntl.h>   
+#include <pthread.h>
 
 /* global variables*/ 
 int *marco1;
@@ -84,17 +85,22 @@ int main(void)
 	        //var_glb++;
 	        //printf("Child Process :: PID = %d, OS PID = %d, Parent PID %d\n", PID, getpid(),getppid());
 	        printf("Child Process :: PID = %d\n", getpid());
+
+	        /*Region Critica*/
 	        sem_wait(sem);
-	        sleep(1);
-	        printf ("  Child(%d) is in critical section.\n", getpid());
-        	//sleep (1);
-	        *isPlayersCreated=*isPlayersCreated+1;
+	        sleep(.1);
+	        //printf ("  Child(%d) is in critical section.\n", getpid());
+        	//sleep (1);	        
 	        //printf ("  Child(%d) new value of *isPlayersCreated=%d.\n", getpid(), *isPlayersCreated);
 	        sem_post (sem);
 
-	        printf(" Marco1 = %d\n",*marco1);
-	        printf(" Marco2 = %d\n",*marco2);
-	        exit(0);
+	        //printf("	Marco1 = %d\n",*marco1);
+	        //printf("	Marco2 = %d\n",*marco2);
+	        while(*isPlayersCreated==0){
+	        	pthread_yield();
+	        }
+	        printf("PID= %d no more yield\n", getpid());
+			exit(0);
 
 			//marco1++;
 			//sleep(1);
@@ -103,10 +109,14 @@ int main(void)
 
 	    // Parent
 	    else if(PID > 0){    	       	
-			wait(NULL);
+			//wait(NULL);
 			numeroHijos++;
 			*marco1 = *marco1 + 2;
 			*marco2 = *marco2 + 1;
+			if(numeroHijos == 10){
+				*isPlayersCreated = 1;
+			}
+			sleep(1);
 			//var_lcl = 10;
 			//var_glb = 20;
 			//var_glb++;
@@ -117,15 +127,7 @@ int main(void)
 	}while(PID > 0 && numeroHijos<10);
 	//printf(" variable global valor: %d\n", var_glb);
 	if(PID>0){
-		//wait(NULL);
-		printf("numero de Hijos %d, isPlayersCreated %d\n",numeroHijos, *isPlayersCreated);
-		/* shared memory detach */
-        shmdt (isPlayersCreated);
-        shmctl (shmid_0, IPC_RMID, 0);
-        shmctl (shmid_1, IPC_RMID, 0);
-
-        /* cleanup semaphores */
-        sem_destroy (sem);
+		
 	}
 
 
