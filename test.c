@@ -38,10 +38,6 @@ int * shareResource(int cont, int *variable){
     return variable;
 }
 
-void jugar(){
-	
-}
-
 int main(void)
 {
 	time_t now;
@@ -86,14 +82,18 @@ int main(void)
 	        }	
 	        sleep(500);
 	        while(1){
+	        	srand(time(NULL));
+	        	sleep(rand()%5);
+	        	/*Region Critica*/
+	        	sem_wait(sem);
+	        	/*aqui agregar codigo de region critica*/
+	        	sem_post (sem);
 
 	        }
 	        //jugar();        
 	        
-	        /*Region Critica*/
-	        //sem_wait(sem);
-	        /*aqui agregar codigo de region critica*/
-	        //sem_post (sem);
+	        
+	        
 	        /*Duerme al proceso hasta que todos los procesos hayan sido creados*/	                
 			//exit(0);
 			//marco1++;
@@ -103,27 +103,23 @@ int main(void)
 
 	    // Parent
 	    else if(PID > 0){    	       	
-			//wait(NULL);
 			children[numeroHijos] = PID;
-			numeroHijos++;
-			printf("Parent Process. Created child PID = %d\n", PID);
+			numeroHijos++;			
 			*marco1 = *marco1 + 2;
 			*marco2 = *marco2 + 1;
 			if(numeroHijos == 10){
 				*isPlayersCreated = 1;
 			}
-			//sleep(1);
 		}
 	}while(PID > 0 && numeroHijos<10);
 	if(PID>0){
 		printf("Arranca el partido!\n");
-		sleep(10);
+		sleep(300);
 		int i =0;	
 		while(i<10){
 			kill(children[i],SIGTERM);
 			i++;
-		}
-		
+		}		
 	}
 	return 0;
 }
