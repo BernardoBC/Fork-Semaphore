@@ -68,7 +68,7 @@ int main(void)
 
     /*Marco 2 recurso compartido*/
     shmkey_2 = ftok ("/dev/null", 7);       /* valid directory name and a number */
-    printf ("shmkey for marco1 = %d\n", shmkey_2);
+    printf ("shmkey for marco2 = %d\n", shmkey_2);
     shmid_2 = shmget (shmkey_2, sizeof (int), 0644 | IPC_CREAT);
     if (shmid_2 < 0){                           /* shared memory error check */
         perror ("shmget\n");
@@ -79,8 +79,8 @@ int main(void)
     printf ("marco2 =%d is allocated in shared memory.\n\n", *marco2);
 
     /*Pelota recurso compartido*/
-    shmkey_3 = ftok ("/dev/null", 7);       /* valid directory name and a number */
-    printf ("shmkey for marco1 = %d\n", shmkey_3;
+    shmkey_3 = ftok ("/dev/null", 8);       /* valid directory name and a number */
+    printf ("shmkey for pelota = %d\n", shmkey_3);
     shmid_3 = shmget (shmkey_3, sizeof (int), 0644 | IPC_CREAT);
     if (shmid_3 < 0){                           /* shared memory error check */
         perror ("shmget\n");
