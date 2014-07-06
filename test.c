@@ -11,8 +11,8 @@
 
 /* global variables*/
 int var_glb; 
-int marco1;
-int marco2;
+int *marco1;
+int *marco2;
 int *isPlayersCreated;
 sem_t sem_Pelota;
 sem_t sem_Marco1;
@@ -47,6 +47,7 @@ int main(void)
     *isPlayersCreated = 0;
     printf ("isPlayersCreated=%d is allocated in shared memory.\n\n", *isPlayersCreated);
 
+
     //lol
     shmkey_2 = ftok ("/dev/null", 6);       /* valid directory name and a number */
     printf ("shmkey for marco1 = %d\n", shmkey_2);
@@ -55,9 +56,12 @@ int main(void)
         perror ("shmget\n");
         exit (1);
     }
-    marco1 = (int *) shmat (shmid_2, NULL, 0);
+    *marco1 = (int *) shmat (shmid_2, NULL, 0);
     *marco1 = 0;
     printf ("marco1=%d is allocated in shared memory.\n\n", *marco1);
+
+    
+    
 
     /*semaphores*/
     sem = sem_open ("pSem", O_CREAT | O_EXCL, 0644, 1); 
