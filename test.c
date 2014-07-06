@@ -9,11 +9,13 @@
 #include <semaphore.h> /* sem_open(), sem_destroy(), sem_wait().. */
 #include <fcntl.h>   
 
-/* global variables*/
-int var_glb; 
+/* global variables*/ 
 int *marco1;
 int *marco2;
 int *isPlayersCreated;
+int *pelota;
+
+//semaphores
 sem_t sem_Pelota;
 sem_t sem_Marco1;
 sem_t sem_Marco2;
@@ -23,14 +25,16 @@ int main(void)
 {
 	time_t now;
 	pid_t PID;
-	int var_lcl = 0;
 	int numeroHijos = 0;
 
 	/*Memoria compartida*/
 	key_t shmkey_1;                 /*      shared memory key       */
-	int shmid_1;                    /*      shared memory id        */
 	key_t shmkey_2;                 /*      shared memory key       */
+	key_t shmkey_3;                 /*      shared memory key       */
+	int shmid_1;                    /*      shared memory id        */	
 	int shmid_2;                    /*      shared memory id        */
+	int shmid_3;                    /*      shared memory id        */
+
 	sem_t *sem;                   /*      synch semaphore         *//*shared */
 	pid_t pid;                    /*      fork pid                */
 	int *p;                       /*      shared variable         *//*shared */
@@ -48,7 +52,19 @@ int main(void)
     printf ("isPlayersCreated=%d is allocated in shared memory.\n\n", *isPlayersCreated);
 
 
-    //lol
+    /*Marco 1 recurso compartido*/
+    shmkey_2 = ftok ("/dev/null", 6);       /* valid directory name and a number */
+    printf ("shmkey for marco1 = %d\n", shmkey_2);
+    shmid_2 = shmget (shmkey_2, sizeof (int), 0644 | IPC_CREAT);
+    if (shmid_2 < 0){                           /* shared memory error check */
+        perror ("shmget\n");
+        exit (1);
+    }
+    marco1 = (int *) shmat (shmid_2, NULL, 0);
+    *marco1 = 0;
+    printf ("marco1=%d is allocated in shared memory.\n\n", *marco1);
+
+    /*Marco 2 recurso compartido*/
     shmkey_2 = ftok ("/dev/null", 6);       /* valid directory name and a number */
     printf ("shmkey for marco1 = %d\n", shmkey_2);
     shmid_2 = shmget (shmkey_2, sizeof (int), 0644 | IPC_CREAT);
