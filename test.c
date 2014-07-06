@@ -20,9 +20,11 @@ sem_t sem_Pelota;
 sem_t sem_Marco1;
 sem_t sem_Marco2;
 
-int * shareResource(key_t shmkey, int shmid, int cont, int *variable){
+int * shareResource(int cont, int *variable){
+	key_t shmkey;
+	int shmid;
 	shmkey = ftok ("/dev/null", cont);       /* valid directory name and a number */
-    printf ("shmkey for this = %d\n", shmkey);
+    
     shmid = shmget (shmkey, sizeof (int), 0644 | IPC_CREAT);
     if (shmid < 0){                           /* shared memory error check */
         perror ("shmget\n");
@@ -41,9 +43,6 @@ int main(void)
 
 	/*Memoria compartida*/
 	key_t shmkey_0;                 /*      shared memory key       */
-	key_t shmkey_1;                 /*      shared memory key       */
-	key_t shmkey_2;                 /*      shared memory key       */
-	key_t shmkey_3;                 /*      shared memory key       */
 	int shmid_0;                    /*      shared memory id        */	
 	int shmid_1;                    /*      shared memory id        */
 	int shmid_2;                    /*      shared memory id        */
@@ -55,41 +54,10 @@ int main(void)
 
 	
 
-    isPlayersCreated = shareResource(shmkey_0, shmid_0, 5, isPlayersCreated);
-
-
-    /*Marco 1 recurso compartido*/
-    shmkey_1 = ftok ("/dev/null", 6);       /* valid directory name and a number */
-    printf ("shmkey for marco1 = %d\n", shmkey_1);
-    shmid_1 = shmget (shmkey_1, sizeof (int), 0644 | IPC_CREAT);
-    if (shmid_1 < 0){                           /* shared memory error check */
-        perror ("shmget\n");
-        exit (1);
-    }
-    marco1 = (int *) shmat (shmid_1, NULL, 0);
-    *marco1 = 0;
-
-    /*Marco 2 recurso compartido*/
-    shmkey_2 = ftok ("/dev/null", 7);       /* valid directory name and a number */
-    printf ("shmkey for marco2 = %d\n", shmkey_2);
-    shmid_2 = shmget (shmkey_2, sizeof (int), 0644 | IPC_CREAT);
-    if (shmid_2 < 0){                           /* shared memory error check */
-        perror ("shmget\n");
-        exit (1);
-    }
-    marco2 = (int *) shmat (shmid_2, NULL, 0);
-    *marco2 = 0;
-
-    /*Pelota recurso compartido*/
-    shmkey_3 = ftok ("/dev/null", 8);       /* valid directory name and a number */
-    printf ("shmkey for pelota = %d\n", shmkey_3);
-    shmid_3 = shmget (shmkey_3, sizeof (int), 0644 | IPC_CREAT);
-    if (shmid_3 < 0){                           /* shared memory error check */
-        perror ("shmget\n");
-        exit (1);
-    }
-    pelota = (int *) shmat (shmid_3, NULL, 0);
-    *pelota = 0;
+    isPlayersCreated = shareResource(5, isPlayersCreated);
+    marco1 = shareResource(6, marco1);
+    marco2 = shareResource(7,marco2);
+    pelota = shareResource(8,marco2);
 
     
     
@@ -114,7 +82,8 @@ int main(void)
 			
 			//var_lcl++;
 	        //var_glb++;
-	        printf("Child Process :: PID = %d, OS PID = %d, Parent PID %d\n", PID, getpid(),getppid());
+	        //printf("Child Process :: PID = %d, OS PID = %d, Parent PID %d\n", PID, getpid(),getppid());
+	        printf("Child Process :: PID = %d\n", getpid());
 	        sem_wait(sem);
 	        sleep(1);
 	        printf ("  Child(%d) is in critical section.\n", getpid());
@@ -124,7 +93,7 @@ int main(void)
 	        sem_post (sem);
 
 	        printf(" Marco1 = %d\n",*marco1);
-	        printf(" Marco2 = %d\n",*marco1);
+	        printf(" Marco2 = %d\n",*marco2);
 	        exit(0);
 
 			//marco1++;
@@ -136,7 +105,7 @@ int main(void)
 	    else if(PID > 0){    	       	
 			wait(NULL);
 			numeroHijos++;
-			*marco1 = *marco1 + 1;
+			*marco1 = *marco1 + 2;
 			*marco2 = *marco2 + 1;
 			//var_lcl = 10;
 			//var_glb = 20;
