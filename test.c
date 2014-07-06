@@ -20,6 +20,17 @@ sem_t sem_Pelota;
 sem_t sem_Marco1;
 sem_t sem_Marco2;
 
+void shareResource(key_t shmkey, int shmid, int cont, int *variable){
+	shmkey = ftok ("/dev/null", cont);       /* valid directory name and a number */
+    printf ("shmkey for this = %d\n", shmkey);
+    shmid = shmget (shmkey, sizeof (int), 0644 | IPC_CREAT);
+    if (shmid < 0){                           /* shared memory error check */
+        perror ("shmget\n");
+        exit (1);
+    }
+    variable = (int *) shmat (shmid, NULL, 0);
+    *variable = 0;	
+}
 
 int main(void)
 {
@@ -41,17 +52,9 @@ int main(void)
 	pid_t pid;                    /*      fork pid                */
 	int *p;                       /*      shared variable         *//*shared */
 
-	/*Agregar valor isPlayerCreated a memoria compartida*/
-    shmkey_0 = ftok ("/dev/null", 5);       /* valid directory name and a number */
-    printf ("shmkey for isPlayersCreated = %d\n", shmkey_0);
-    shmid_0 = shmget (shmkey_0, sizeof (int), 0644 | IPC_CREAT);
-    if (shmid_0 < 0){                           /* shared memory error check */
-        perror ("shmget\n");
-        exit (1);
-    }
-    isPlayersCreated = (int *) shmat (shmid_0, NULL, 0);
-    *isPlayersCreated = 0;
-    printf ("isPlayersCreated=%d is allocated in shared memory.\n\n", *isPlayersCreated);
+	
+
+    shareResource(shmkey_0, shmid_0, 5, isPlayersCreated);
 
 
     /*Marco 1 recurso compartido*/
@@ -64,7 +67,6 @@ int main(void)
     }
     marco1 = (int *) shmat (shmid_1, NULL, 0);
     *marco1 = 0;
-    printf ("marco1=%d is allocated in shared memory.\n\n", *marco1);
 
     /*Marco 2 recurso compartido*/
     shmkey_2 = ftok ("/dev/null", 7);       /* valid directory name and a number */
@@ -76,7 +78,6 @@ int main(void)
     }
     marco2 = (int *) shmat (shmid_2, NULL, 0);
     *marco2 = 0;
-    printf ("marco2 =%d is allocated in shared memory.\n\n", *marco2);
 
     /*Pelota recurso compartido*/
     shmkey_3 = ftok ("/dev/null", 8);       /* valid directory name and a number */
@@ -88,7 +89,6 @@ int main(void)
     }
     pelota = (int *) shmat (shmid_3, NULL, 0);
     *pelota = 0;
-    printf ("pelota=%d is allocated in shared memory.\n\n", *pelota);
 
     
     
@@ -124,6 +124,7 @@ int main(void)
 
 	        printf(" Marco1 = %d\n",*marco1);
 	        printf(" Marco2 = %d\n",*marco1);
+	        exit(0);
 
 			//marco1++;
 			//sleep(1);
