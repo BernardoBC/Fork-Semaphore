@@ -14,6 +14,7 @@
 int *marco1;
 int *marco2;
 int *isPlayersCreated;
+
 int *pelota;
 
 //semaphores
@@ -21,6 +22,7 @@ sem_t sem_Pelota;
 sem_t sem_Marco1;
 sem_t sem_Marco2;
 
+/*Memoria compartida*/
 int * shareResource(int cont, int *variable){
 	key_t shmkey;
 	int shmid;
@@ -36,31 +38,27 @@ int * shareResource(int cont, int *variable){
     return variable;
 }
 
+void jugar(){
+	
+}
+
 int main(void)
 {
 	time_t now;
+	pid_t children[10];
 	pid_t PID;
-	int numeroHijos = 0;
-
-	/*Memoria compartida*/
-	key_t shmkey_0;                 /*      shared memory key       */
-	int shmid_0;                    /*      shared memory id        */	
-	int shmid_1;                    /*      shared memory id        */
-	int shmid_2;                    /*      shared memory id        */
-	int shmid_3;                    /*      shared memory id        */
+	int numeroHijos = 0;/* 0-4 equipo ROJO, 5-9 equipo AZUL */
 
 	sem_t *sem;                   /*      synch semaphore         *//*shared */
-	pid_t pid;                    /*      fork pid                */
-	int *p;                       /*      shared variable         *//*shared */
 
-	
+	int *p;                       /*      shared variable         *//*shared */	
 
+	/*Crea los recursos compartidos*/
     isPlayersCreated = shareResource(5, isPlayersCreated);
     marco1 = shareResource(6, marco1);
     marco2 = shareResource(7,marco2);
-    pelota = shareResource(8,marco2);
+    pelota = shareResource(8,marco2);    
 
-    
     
 
     /*semaphores*/
@@ -71,6 +69,7 @@ int main(void)
     /* if a crash occurs during the execution         */
     //printf ("semaphores initialized.\n\n");
 
+    /*Crea los 10 procesos*/
 	do{
 		PID = fork();
 		
@@ -80,28 +79,23 @@ int main(void)
 
 		// childCreation was successful
 		else if(PID == 0){ 
-			
-			//var_lcl++;
-	        //var_glb++;
-	        //printf("Child Process :: PID = %d, OS PID = %d, Parent PID %d\n", PID, getpid(),getppid());
+
 	        printf("Child Process :: PID = %d\n", getpid());
-
-	        /*Region Critica*/
-	        sem_wait(sem);
-	        sleep(.1);
-	        //printf ("  Child(%d) is in critical section.\n", getpid());
-        	//sleep (1);	        
-	        //printf ("  Child(%d) new value of *isPlayersCreated=%d.\n", getpid(), *isPlayersCreated);
-	        sem_post (sem);
-
-	        //printf("	Marco1 = %d\n",*marco1);
-	        //printf("	Marco2 = %d\n",*marco2);
 	        while(*isPlayersCreated==0){
 	        	pthread_yield();
-	        }
-	        printf("PID= %d no more yield\n", getpid());
-			exit(0);
+	        }	
+	        sleep(500);
+	        while(1){
 
+	        }
+	        //jugar();        
+	        
+	        /*Region Critica*/
+	        //sem_wait(sem);
+	        /*aqui agregar codigo de region critica*/
+	        //sem_post (sem);
+	        /*Duerme al proceso hasta que todos los procesos hayan sido creados*/	                
+			//exit(0);
 			//marco1++;
 			//sleep(1);
 	        	
@@ -110,26 +104,26 @@ int main(void)
 	    // Parent
 	    else if(PID > 0){    	       	
 			//wait(NULL);
+			children[numeroHijos] = PID;
 			numeroHijos++;
+			printf("Parent Process. Created child PID = %d\n", PID);
 			*marco1 = *marco1 + 2;
 			*marco2 = *marco2 + 1;
 			if(numeroHijos == 10){
 				*isPlayersCreated = 1;
 			}
-			sleep(1);
-			//var_lcl = 10;
-			//var_glb = 20;
-			//var_glb++;
-			//printf("Parent process :: Children Count = %d, PID = %d, OS PID = %d, Parent PID %d\n\n", numeroHijos++,PID, getpid(), getppid());
-			//marco1++;	
-			//printf("%d\n",numeroHijos);	
+			//sleep(1);
 		}
 	}while(PID > 0 && numeroHijos<10);
-	//printf(" variable global valor: %d\n", var_glb);
 	if(PID>0){
+		printf("Arranca el partido!\n");
+		sleep(10);
+		int i =0;	
+		while(i<10){
+			kill(children[i],SIGTERM);
+			i++;
+		}
 		
 	}
-
-
 	return 0;
 }
