@@ -56,7 +56,7 @@ int main(void)
         perror ("shmget\n");
         exit (1);
     }
-    *marco1 = (int *) shmat (shmid_2, NULL, 0);
+    marco1 = (int *) shmat (shmid_2, NULL, 0);
     *marco1 = 0;
     printf ("marco1=%d is allocated in shared memory.\n\n", *marco1);
 
@@ -118,7 +118,8 @@ int main(void)
 		printf("numero de Hijos %d, isPlayersCreated %d\n",numeroHijos, *isPlayersCreated);
 		/* shared memory detach */
         shmdt (isPlayersCreated);
-        shmctl (shmid, IPC_RMID, 0);
+        shmctl (shmid_1, IPC_RMID, 0);
+        shmctl (shmid_2, IPC_RMID, 0);
 
         /* cleanup semaphores */
         sem_destroy (sem);
