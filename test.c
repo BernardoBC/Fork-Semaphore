@@ -20,7 +20,7 @@ sem_t sem_Pelota;
 sem_t sem_Marco1;
 sem_t sem_Marco2;
 
-void shareResource(key_t shmkey, int shmid, int cont, int *variable){
+int * shareResource(key_t shmkey, int shmid, int cont, int *variable){
 	shmkey = ftok ("/dev/null", cont);       /* valid directory name and a number */
     printf ("shmkey for this = %d\n", shmkey);
     shmid = shmget (shmkey, sizeof (int), 0644 | IPC_CREAT);
@@ -30,6 +30,7 @@ void shareResource(key_t shmkey, int shmid, int cont, int *variable){
     }
     variable = (int *) shmat (shmid, NULL, 0);
     *variable = 0;	
+    return variable;
 }
 
 int main(void)
@@ -54,7 +55,7 @@ int main(void)
 
 	
 
-    shareResource(shmkey_0, shmid_0, 5, isPlayersCreated);
+    isPlayersCreated = shareResource(shmkey_0, shmid_0, 5, isPlayersCreated);
 
 
     /*Marco 1 recurso compartido*/
@@ -133,7 +134,7 @@ int main(void)
 
 	    // Parent
 	    else if(PID > 0){    	       	
-			//wait(NULL);
+			wait(NULL);
 			numeroHijos++;
 			*marco1 = *marco1 + 1;
 			*marco2 = *marco2 + 1;
@@ -147,7 +148,7 @@ int main(void)
 	}while(PID > 0 && numeroHijos<10);
 	//printf(" variable global valor: %d\n", var_glb);
 	if(PID>0){
-		wait(NULL);
+		//wait(NULL);
 		printf("numero de Hijos %d, isPlayersCreated %d\n",numeroHijos, *isPlayersCreated);
 		/* shared memory detach */
         shmdt (isPlayersCreated);
