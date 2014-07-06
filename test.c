@@ -30,10 +30,10 @@ int main(void)
 	/*Memoria compartida*/
 	key_t shmkey_0;                 /*      shared memory key       */
 	key_t shmkey_1;                 /*      shared memory key       */
-	key_t shmkey_3;                 /*      shared memory key       */
+	key_t shmkey_2;                 /*      shared memory key       */
 	int shmid_0;                    /*      shared memory id        */	
 	int shmid_1;                    /*      shared memory id        */
-	int shmid_3;                    /*      shared memory id        */
+	int shmid_2;                    /*      shared memory id        */
 
 	sem_t *sem;                   /*      synch semaphore         *//*shared */
 	pid_t pid;                    /*      fork pid                */
