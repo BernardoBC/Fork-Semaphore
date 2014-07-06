@@ -31,9 +31,11 @@ int main(void)
 	key_t shmkey_0;                 /*      shared memory key       */
 	key_t shmkey_1;                 /*      shared memory key       */
 	key_t shmkey_2;                 /*      shared memory key       */
+	key_t shmkey_3;                 /*      shared memory key       */
 	int shmid_0;                    /*      shared memory id        */	
 	int shmid_1;                    /*      shared memory id        */
 	int shmid_2;                    /*      shared memory id        */
+	int shmid_3;                    /*      shared memory id        */
 
 	sem_t *sem;                   /*      synch semaphore         *//*shared */
 	pid_t pid;                    /*      fork pid                */
@@ -74,7 +76,19 @@ int main(void)
     }
     marco2 = (int *) shmat (shmid_2, NULL, 0);
     *marco2 = 0;
-    printf ("marco1=%d is allocated in shared memory.\n\n", *marco2);
+    printf ("marco2 =%d is allocated in shared memory.\n\n", *marco2);
+
+    /*Pelota recurso compartido*/
+    shmkey_3 = ftok ("/dev/null", 7);       /* valid directory name and a number */
+    printf ("shmkey for marco1 = %d\n", shmkey_3;
+    shmid_3 = shmget (shmkey_3, sizeof (int), 0644 | IPC_CREAT);
+    if (shmid_3 < 0){                           /* shared memory error check */
+        perror ("shmget\n");
+        exit (1);
+    }
+    pelota = (int *) shmat (shmid_3, NULL, 0);
+    *pelota = 0;
+    printf ("pelota=%d is allocated in shared memory.\n\n", *pelota);
 
     
     
@@ -118,7 +132,7 @@ int main(void)
 
 	    // Parent
 	    else if(PID > 0){    	       	
-			wait(NULL);
+			//wait(NULL);
 			numeroHijos++;
 			*marco1 = *marco1 + 1;
 			*marco2 = *marco2 + 1;
@@ -132,7 +146,7 @@ int main(void)
 	}while(PID > 0 && numeroHijos<10);
 	//printf(" variable global valor: %d\n", var_glb);
 	if(PID>0){
-
+		wait(NULL);
 		printf("numero de Hijos %d, isPlayersCreated %d\n",numeroHijos, *isPlayersCreated);
 		/* shared memory detach */
         shmdt (isPlayersCreated);
