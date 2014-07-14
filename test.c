@@ -108,6 +108,19 @@ int main(void)
 						//success						
 						printf("proceso %d en tiene la pelota (equipo: %c)\n", getpid(), equipo);
 						sleep(1);	
+						if(sem_trywait(sem_Cancha1)==-1){ //trata de agarrar la cancha
+							if(errno == ETIMEDOUT){
+						}
+						printf("%d fallo agarrar la cancha\n", getpid());
+						//break;
+						}else{
+							//success						
+							printf("proceso %d anoto (equipo: %c)\n", getpid(), equipo);								
+							printf("suelta la pelota.\n");
+							sem_post (sem_Cancha1);	
+
+						}
+						sleep(1);	
 						printf("suelta la pelota.\n");
 						sem_post (sem_Pelota);	
 
