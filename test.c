@@ -41,7 +41,7 @@ int * shareResource(int cont, int *variable){
 int main(void)
 {	
 	
-	pid_t children[10];
+	pid_t children[10];/*Padre almacena los hijos para luego matarlos*/
 	pid_t PID;
 	int numeroHijos = 0;	/* Para Padre: numero de hijos creados*/
 				/*Para Hijos: numero de jugador. 0-4 equipo A, 5-9 equipo B */
@@ -106,9 +106,9 @@ int main(void)
 					//break;
 					}else{
 						//success						
-						printf("proceso %d en tiene la pelota (equipo: %c)\n", getpid(), equipo);
+						printf("proceso %d tiene la pelota (equipo: %c)\n", getpid(), equipo);
 						sleep(1);	
-						if(numeroHijos<5){
+						if(numeroHijos<5){ /*Diferentes jugdaores agarran diferentes canchas*/
 							if(sem_trywait(sem_Cancha2)==-1){ //trata de agarrar la cancha
 								if(errno == ETIMEDOUT){
 							}
@@ -119,12 +119,12 @@ int main(void)
 								printf("proceso %d agarra la cancha 2 y anota\n", getpid());
 								*cancha2 = *cancha2 +1;	
 								sleep(.5);							
-								printf("%d suelta la cancha.\n\n", getpid());
+								printf("%d suelta la cancha.\n", getpid());
 								sem_post (sem_Cancha2);	
 
 							}
 							sleep(1);	
-							printf("%d suelta la pelota.\n", getpid());
+							printf("%d suelta la pelota.\n\n", getpid());
 							sem_post (sem_Pelota);	
 						}else{
 							if(sem_trywait(sem_Cancha1)==-1){ //trata de agarrar la cancha
@@ -178,7 +178,9 @@ int main(void)
 		while(timer!=0){
 		sleep(1);
 		if((timer%30)==0){
-			printf("-----------------------\n:: Marcador\n:: Equipo A: %d Equipo B: %d\n:: Tiempo Restante: %d\n-----------------------\n",*cancha2,*cancha1,timer);
+			int min = timer/60;
+			int sec = timer%30;			
+			printf("-----------------------\n:: Marcador\n:: Equipo A: %d Equipo B: %d\n:: Tiempo Restante: %d:%d\n-----------------------\n\n",*cancha2,*cancha1,min,sec);
 		}
 		timer--;
 		}
