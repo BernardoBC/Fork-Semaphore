@@ -58,12 +58,13 @@ int main(void)
     
 
     /*semaphores*/
-    sem = sem_open ("pSem", O_CREAT | O_EXCL, 0644, 1); 
+    sem_Pelota = sem_open ("pSem", O_CREAT | O_EXCL, 0644, 1); 
+    sem_Marco1 = sem_open ("pSem", O_CREAT | O_EXCL, 0644, 1);
+    sem_Marco2 = sem_open ("pSem", O_CREAT | O_EXCL, 0644, 1);
     /* name of semaphore is "pSem", semaphore is reached using this name */
     sem_unlink ("pSem");      
     /* unlink prevents the semaphore existing forever */
-    /* if a crash occurs during the execution         */
-    //printf ("semaphores initialized.\n\n");
+
 
     /*Crea los 10 procesos*/
 	do{
@@ -85,7 +86,7 @@ int main(void)
 	        	srand(time(NULL));
 	        	sleep(rand()%5);
 	        	/*Region Critica*/
-	        	sem_wait(sem);
+	        	sem_wait(sem_Pelota);
 	        	/*aqui agregar codigo de region critica*/
 	        	sem_post (sem);
 
