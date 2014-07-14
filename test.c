@@ -6,16 +6,15 @@
 #include <sys/wait.h>
 #include <stdlib.h>
 #include <time.h>
-#include <semaphore.h> /* sem_open(), sem_destroy(), sem_wait().. */
+#include <semaphore.h> /* sem_open(), sem_trywait().. */
 #include <fcntl.h>   
 #include <pthread.h>
 
 
-/* global variables*/ 
+/* Variables Globales*/ 
 int *cancha1;
 int *cancha2;
 int *isPlayersCreated;
-
 int *pelota;
 
 //semaphores
@@ -23,14 +22,14 @@ sem_t *sem_Pelota;
 sem_t *sem_Cancha1;
 sem_t *sem_Cancha2;
 
-/*Funcion de Memoria compartida*/
-int * shareResource(int cont, int *variable){ 
+/*Función de Memoria compartida*/
+int * sharedResource(int cont, int *variable){ 
 	key_t shmkey;
 	int shmid;
-	shmkey = ftok ("/dev/null", cont);       /* valid directory name and a number */
+	shmkey = ftok ("/dev/null", cont);       /* nombre y numero para SharedMemory Key "shmkey" */
     
     shmid = shmget (shmkey, sizeof (int), 0644 | IPC_CREAT);
-    if (shmid < 0){                           /*error check */
+    if (shmid < 0){                           /*error*/
         perror ("shmget\n");
         exit (1);
     }
@@ -39,35 +38,34 @@ int * shareResource(int cont, int *variable){
     return variable;
 }
 
+
 int main(void)
 {	
 	
 	pid_t children[10];/*Padre almacena los hijos para luego matarlos*/
 	pid_t PID;
 	int numeroHijos = 0;	/* Para Padre: numero de hijos creados*/
-				/*Para Hijos: numero de jugador. 0-4 equipo A, 5-9 equipo B */
+							/*Para Hijos: numero de jugador. 0-4 equipo A, 5-9 equipo B */
 
-	sem_t *sem;                   /*      synch semaphore         *//*shared */
+	sem_t *sem;		/*      synch semaphore         *//*shared */
 
-	int *p;                       /*      shared variable         *//*shared */	
+	int *p;			/*      shared variable         *//*shared */	
 
 	/*Crea los recursos compartidos*/
-    isPlayersCreated = shareResource(5, isPlayersCreated);
-    cancha1 = shareResource(6, cancha1);
-    cancha2 = shareResource(7,cancha2);
-    pelota = shareResource(8,pelota);    
+    isPlayersCreated = sharedResource(5, isPlayersCreated);
+    cancha1 = sharedResource(6, cancha1);
+    cancha2 = sharedResource(7,cancha2);
+    pelota = sharedResource(8,pelota);    
 
     
 
     /*semaphores*/
     sem_Pelota = sem_open ("pSem", O_CREAT | O_EXCL, 0644, 1); 
     sem_Cancha1 = sem_open ("cSem", O_CREAT | O_EXCL, 0644, 1);
-    sem_Cancha2 = sem_open ("dSem", O_CREAT | O_EXCL, 0644, 1);
-    /* name of semaphore is "pSem", semaphore is reached using this name */
+    sem_Cancha2 = sem_open ("dSem", O_CREAT | O_EXCL, 0644, 1);    
     sem_unlink ("pSem");  
     sem_unlink ("cSem");  
-    sem_unlink ("dSem");      
-    /* unlink prevents the semaphore existing forever */
+    sem_unlink ("dSem");    
 
 
     /*Crea los 10 procesos*/
@@ -78,26 +76,26 @@ int main(void)
 			printf("error");
 		}
 
-		// childCreation was successful
+		// Hijo
 		else if(PID == 0){
-		char equipo;
-		if(numeroHijos<5){
-			equipo = 'A';
-		}else{equipo = 'B';}
-	        printf("Child Process :: PID = %d, equipo = %c, jugador # = %d\n", getpid(),equipo,numeroHijos);
-		*isPlayersCreated = *isPlayersCreated + 1;
-		//printf("%d\n",*isPlayersCreated);
+			char equipo;
+			if(numeroHijos<5){
+				equipo = 'A';
+			}else{equipo = 'B';}
+		    printf("Child Process :: PID = %d, equipo = %c, jugador # = %d\n", getpid(),equipo,numeroHijos);
+			*isPlayersCreated = *isPlayersCreated + 1;
 
-		/*Espera para comienzo de partido*/
-		while(*isPlayersCreated!=10){			
-			pthread_yield(); /*Evita busy-waiting. System call que causa que el proceso seda el CPU*/
-		}
+			/*Espera hasta que todos los procesos hijos sean creados para comienzo de partido*/
+			while(*isPlayersCreated!=10){			
+				pthread_yield(); /*Evita busy-waiting. System call que causa que el proceso seda el CPU*/
+			}
 
-		/*Loop de partido*/
-		while(1){
-			int ran;
-    			ran = rand() % 15;
-			sleep(ran+5);			
+			/*Loop de partido*/
+			while(1){
+				/*Tiempo aleatorio para tratar de agarrar la pelota*/
+				int ran;
+	    		ran = rand() % 15;
+				sleep(ran+5);			
 				if(*pelota == 0){
 					/*Region Critica Pelota*/
 					if(sem_trywait(sem_Pelota)==-1){ //waiting for result 
@@ -152,19 +150,10 @@ int main(void)
 						sleep(1);	
 						printf("%d suelta la pelota.\n\n", getpid());
 						sem_post (sem_Pelota);	
-						
-
-					}
-					//sem_wait(sem_Pelota);
-					/*aqui agregar codigo de region critica*/						
-					
-				}
-				
-			
-			
-		}
-	              	
-	        }
+					}					
+				}				
+			}	              	
+	    }
 
 	    // Parent
 	    else if(PID > 0){    	       	
@@ -172,8 +161,7 @@ int main(void)
 			numeroHijos++;
 			if(numeroHijos == 10){
 				*cancha1 =0;
-				*cancha2 =0;
-				//*isPlayersCreated = 1;
+				*cancha2 =0;				
 			}
 			
 		}		
