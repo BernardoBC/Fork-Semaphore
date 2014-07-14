@@ -10,6 +10,7 @@
 #include <fcntl.h>   
 #include <pthread.h>
 
+
 /* global variables*/ 
 int *cancha1;
 int *cancha2;
@@ -88,11 +89,11 @@ int main(void)
 		//printf("%d\n",*isPlayersCreated);
 
 		/*Espera para comienzo de partido*/
-		while(*isPlayersCreated!=10){
-			//printf("%d\n",*isPlayersCreated);
-			//sleep(3);
-			pthread_yield();
+		while(*isPlayersCreated!=10){			
+			pthread_yield(); /*Evita busy-waiting. System call que causa que el proceso seda el CPU*/
 		}
+
+		/*Loop de partido*/
 		while(1){
 			int ran;
     			ran = rand() % 15;
@@ -120,9 +121,9 @@ int main(void)
 								}else{
 									//success
 									intento = 3;						
-									printf("proceso %d agarra la cancha 2 y anota\n", getpid());
+									printf("%d agarra la cancha 2 y anota\n", getpid());
 									*cancha2 = *cancha2 +1;	
-									sleep(.5);							
+									sleep(1);							
 									printf("%d suelta la cancha.\n", getpid());
 									sem_post (sem_Cancha2);	
 
@@ -138,9 +139,9 @@ int main(void)
 								}else{
 									//success	
 									intento = 3;					
-									printf("proceso %d agarra la cancha 1 y anota\n", getpid());
+									printf("%d agarra la cancha 1 y anota\n", getpid());
 									*cancha1 = *cancha1 +1;	
-									sleep(.5);							
+									sleep(1);							
 									printf("%d suelta la cancha.\n", getpid());
 									sem_post (sem_Cancha1);	
 
@@ -179,23 +180,27 @@ int main(void)
 	}while(PID > 0 && numeroHijos<10);
 	if(PID>0){
 		//printf("Arranca el partido!\n",*isPlayersCreated);
-		int timer = 300;
+		int timer = 300;/*300 segundos == 5 minutos*/
 		while(timer!=0){
-		sleep(1);
-		if((timer%30)==0){
+			sleep(1);
 			int min = timer/60;
-			int sec = timer%60;			
-			printf("-----------------------\n:: Marcador\n:: Equipo A: %d Equipo B: %d\n:: Tiempo Restante: %d:%02d\n-----------------------\n\n",*cancha2,*cancha1,min,sec);
+			int sec = timer%60;	
+			if((timer%30)==0){	/*Muestra marcador y tiempo restante cada 30 segundos*/					
+				printf("-----------------------\n:: Marcador\n:: Equipo A: %d Equipo B: %d\n:: Tiempo Restante: %d:%02d\n-----------------------\n\n",*cancha2,*cancha1,min,sec);
+			}			        
+			timer--;
+
 		}
-		timer--;
-		}
-		//wait(NULL);
-		printf("matando hijos\n");
+		
+		/*Mata a los hijos*/	
 		int i =0;	
 		while(i<10){
 			kill(children[i],SIGTERM);
 			i++;
-		}		
+		}
+		/*Marcador Final*/	
+		printf("-----------------------\n:: Fin de Partido\n:: Marcador\n:: Equipo A: %d Equipo B: %d\n-----------------------\n\n",*cancha2,*cancha1);
+			
 	}
 	return 0;
 }
