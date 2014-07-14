@@ -95,7 +95,7 @@ int main(void)
 		}
 		while(1){
 			int ran;
-    			ran = rand() % 10;
+    			ran = rand() % 15;
 			sleep(ran+5);			
 				if(*pelota == 0){
 					/*Region Critica Pelota*/
@@ -107,44 +107,50 @@ int main(void)
 					}else{
 						//success						
 						printf("proceso %d tiene la pelota (equipo: %c)\n", getpid(), equipo);
-						sleep(1);	
-						if(numeroHijos<5){ /*Diferentes jugdaores agarran diferentes canchas*/
-							if(sem_trywait(sem_Cancha2)==-1){ //trata de agarrar la cancha
-								if(errno == ETIMEDOUT){
-							}
-							printf("%d fallo agarrar la cancha\n", getpid());
-							//break;
-							}else{
-								//success						
-								printf("proceso %d agarra la cancha 2 y anota\n", getpid());
-								*cancha2 = *cancha2 +1;	
-								sleep(.5);							
-								printf("%d suelta la cancha.\n", getpid());
-								sem_post (sem_Cancha2);	
+						sleep(1);
+						int intento=0;
+						while(intento<3){
+							if(numeroHijos<5){ /*Diferentes jugdaores agarran diferentes canchas*/
+								if(sem_trywait(sem_Cancha2)==-1){ //trata de agarrar la cancha
+									if(errno == ETIMEDOUT){
+									}
+									printf("%d fallo agarrar la cancha\n", getpid());
+									intento++;
+									//break;
+								}else{
+									//success
+									intento = 3;						
+									printf("proceso %d agarra la cancha 2 y anota\n", getpid());
+									*cancha2 = *cancha2 +1;	
+									sleep(.5);							
+									printf("%d suelta la cancha.\n", getpid());
+									sem_post (sem_Cancha2);	
 
-							}
-							sleep(1);	
-							printf("%d suelta la pelota.\n\n", getpid());
-							sem_post (sem_Pelota);	
-						}else{
-							if(sem_trywait(sem_Cancha1)==-1){ //trata de agarrar la cancha
-								if(errno == ETIMEDOUT){
-							}
-							printf("%d fallo agarrar la cancha\n", getpid());
-							//break;
-							}else{
-								//success						
-								printf("proceso %d agarra la cancha 1 y anota\n", getpid());
-								*cancha1 = *cancha1 +1;	
-								sleep(.5);							
-								printf("%d suelta la cancha.\n", getpid());
-								sem_post (sem_Cancha1);	
+								}
+								
+							}else{							
+								if(sem_trywait(sem_Cancha1)==-1){ //trata de agarrar la cancha
+									if(errno == ETIMEDOUT){
+									}
+									printf("%d fallo agarrar la cancha\n", getpid());
+									intento++;
+									//break;
+								}else{
+									//success	
+									intento = 3;					
+									printf("proceso %d agarra la cancha 1 y anota\n", getpid());
+									*cancha1 = *cancha1 +1;	
+									sleep(.5);							
+									printf("%d suelta la cancha.\n", getpid());
+									sem_post (sem_Cancha1);	
 
+								}	
 							}
-							sleep(1);	
-							printf("%d suelta la pelota.\n\n", getpid());
-							sem_post (sem_Pelota);	
 						}
+
+						sleep(1);	
+						printf("%d suelta la pelota.\n\n", getpid());
+						sem_post (sem_Pelota);	
 						
 
 					}
@@ -169,8 +175,7 @@ int main(void)
 				//*isPlayersCreated = 1;
 			}
 			
-		}
-		sleep(.8);
+		}		
 	}while(PID > 0 && numeroHijos<10);
 	if(PID>0){
 		//printf("Arranca el partido!\n",*isPlayersCreated);
@@ -179,8 +184,8 @@ int main(void)
 		sleep(1);
 		if((timer%30)==0){
 			int min = timer/60;
-			int sec = timer%30;			
-			printf("-----------------------\n:: Marcador\n:: Equipo A: %d Equipo B: %d\n:: Tiempo Restante: %d:%d\n-----------------------\n\n",*cancha2,*cancha1,min,sec);
+			int sec = timer%60;			
+			printf("-----------------------\n:: Marcador\n:: Equipo A: %d Equipo B: %d\n:: Tiempo Restante: %d:%02d\n-----------------------\n\n",*cancha2,*cancha1,min,sec);
 		}
 		timer--;
 		}
