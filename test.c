@@ -22,14 +22,14 @@ sem_t *sem_Pelota;
 sem_t *sem_Cancha1;
 sem_t *sem_Cancha2;
 
-/*Memoria compartida*/
-int * shareResource(int cont, int *variable){
+/*Funcion de Memoria compartida*/
+int * shareResource(int cont, int *variable){ 
 	key_t shmkey;
 	int shmid;
 	shmkey = ftok ("/dev/null", cont);       /* valid directory name and a number */
     
     shmid = shmget (shmkey, sizeof (int), 0644 | IPC_CREAT);
-    if (shmid < 0){                           /* shared memory error check */
+    if (shmid < 0){                           /*error check */
         perror ("shmget\n");
         exit (1);
     }
@@ -41,7 +41,6 @@ int * shareResource(int cont, int *variable){
 int main(void)
 {	
 	
-	time_t now;
 	pid_t children[10];
 	pid_t PID;
 	int numeroHijos = 0;	/* Para Padre: numero de hijos creados*/
@@ -61,10 +60,12 @@ int main(void)
 
     /*semaphores*/
     sem_Pelota = sem_open ("pSem", O_CREAT | O_EXCL, 0644, 1); 
-    sem_Cancha1 = sem_open ("pSem2", O_CREAT | O_EXCL, 0644, 1);
-    sem_Cancha2 = sem_open ("pSem3", O_CREAT | O_EXCL, 0644, 1);
+    sem_Cancha1 = sem_open ("cSem", O_CREAT | O_EXCL, 0644, 1);
+    sem_Cancha2 = sem_open ("dSem", O_CREAT | O_EXCL, 0644, 1);
     /* name of semaphore is "pSem", semaphore is reached using this name */
-    sem_unlink ("pSem");      
+    sem_unlink ("pSem");  
+    sem_unlink ("cSem");  
+    sem_unlink ("dSem");      
     /* unlink prevents the semaphore existing forever */
 
 
