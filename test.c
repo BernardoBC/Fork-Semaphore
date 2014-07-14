@@ -98,19 +98,18 @@ int main(void)
 			sleep(ran+5);			
 				if(*pelota == 0){
 					/*Region Critica Pelota*/
-					sem_wait(sem_Pelota);
-					/*aqui agregar codigo de region critica*/
-					printf("proceso %d en tiene la pelota (equipo: %c)\n", getpid(), equipo);
-					*pelota = 1;
-					sleep(2);
-					sem_post (sem_Pelota);
-					printf("proceso %d Anota\n", getpid());
-					if(numeroHijos<5){
-						*cancha2 = *cancha2 +1;
-					}else{
-						*cancha1 = *cancha1 +1;
+					if(sem_trywait(sem_Pelota)==-1){ //waiting for result 
+						if(errno == ETIMEDOUT){
 					}
-					*pelota = 0;			
+					printf("%d fallo\n", getpid());
+					//break;
+					}else{
+						//success						
+						printf("proceso %d en tiene la pelota (equipo: %c)\n", getpid(), equipo);	
+						sem_post (sem_Pelota);				
+					}
+					//sem_wait(sem_Pelota);
+					/*aqui agregar codigo de region critica*/						
 					
 				}
 				
