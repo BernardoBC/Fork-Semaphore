@@ -83,7 +83,7 @@ int main(void)
 		if(numeroHijos<5){
 			equipo = 'A';
 		}else{equipo = 'B';}
-	        printf("Child Process :: PID = %d, equipo = %c jugador # = %d\n", getpid(),equipo,numeroHijos);
+	        printf("Child Process :: PID = %d, equipo = %c, jugador # = %d\n", getpid(),equipo,numeroHijos);
 		*isPlayersCreated = *isPlayersCreated + 1;
 		//printf("%d\n",*isPlayersCreated);
 
@@ -102,7 +102,7 @@ int main(void)
 					if(sem_trywait(sem_Pelota)==-1){ //waiting for result 
 						if(errno == ETIMEDOUT){
 					}
-					printf("%d fallo agarrar la pelota\n", getpid());
+					//printf("%d fallo agarrar la pelota\n", getpid());
 					//break;
 					}else{
 						//success						
@@ -116,10 +116,10 @@ int main(void)
 							//break;
 							}else{
 								//success						
-								printf("proceso %d agarra la cancha 2 y anota (equipo: %c)\n", getpid(), equipo);
+								printf("proceso %d agarra la cancha 2 y anota\n", getpid());
 								*cancha2 = *cancha2 +1;	
 								sleep(.5);							
-								printf("%d suelta la cancha.\n", getpid());
+								printf("%d suelta la cancha.\n\n", getpid());
 								sem_post (sem_Cancha2);	
 
 							}
@@ -134,7 +134,7 @@ int main(void)
 							//break;
 							}else{
 								//success						
-								printf("proceso %d agarra la cancha 1 y anota(equipo: %c)\n", getpid(), equipo);
+								printf("proceso %d agarra la cancha 1 y anota\n", getpid());
 								*cancha1 = *cancha1 +1;	
 								sleep(.5);							
 								printf("%d suelta la cancha.\n", getpid());
@@ -142,7 +142,7 @@ int main(void)
 
 							}
 							sleep(1);	
-							printf("%dsuelta la pelota.\n", getpid());
+							printf("%d suelta la pelota.\n\n", getpid());
 							sem_post (sem_Pelota);	
 						}
 						
@@ -168,8 +168,9 @@ int main(void)
 				*cancha2 =0;
 				//*isPlayersCreated = 1;
 			}
-			sleep(.5);
+			
 		}
+		sleep(.8);
 	}while(PID > 0 && numeroHijos<10);
 	if(PID>0){
 		//printf("Arranca el partido!\n",*isPlayersCreated);
@@ -177,7 +178,7 @@ int main(void)
 		while(timer!=0){
 		sleep(1);
 		if((timer%30)==0){
-			printf(":: Marcador\n:: Equipo A: %d Equipo B: %d\n:: Tiempo Restante: %d\n",*cancha2,*cancha1,timer);
+			printf("-----------------------\n:: Marcador\n:: Equipo A: %d Equipo B: %d\n:: Tiempo Restante: %d\n-----------------------\n",*cancha2,*cancha1,timer);
 		}
 		timer--;
 		}
