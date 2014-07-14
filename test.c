@@ -108,21 +108,44 @@ int main(void)
 						//success						
 						printf("proceso %d en tiene la pelota (equipo: %c)\n", getpid(), equipo);
 						sleep(1);	
-						if(sem_trywait(sem_Cancha1)==-1){ //trata de agarrar la cancha
-							if(errno == ETIMEDOUT){
-						}
-						printf("%d fallo agarrar la cancha\n", getpid());
-						//break;
-						}else{
-							//success						
-							printf("proceso %d anoto (equipo: %c)\n", getpid(), equipo);								
-							printf("suelta la pelota.\n");
-							sem_post (sem_Cancha1);	
+						if(numeroHijos<5){
+							if(sem_trywait(sem_Cancha2)==-1){ //trata de agarrar la cancha
+								if(errno == ETIMEDOUT){
+							}
+							printf("%d fallo agarrar la cancha\n", getpid());
+							//break;
+							}else{
+								//success						
+								printf("proceso %d agarra la cancha 2 y anota (equipo: %c)\n", getpid(), equipo);
+								*cancha2 = *cancha2 +1;	
+								sleep(.5);							
+								printf("%d suelta la cancha.\n", getpid());
+								sem_post (sem_Cancha2);	
 
+							}
+							sleep(1);	
+							printf("%d suelta la pelota.\n", getpid());
+							sem_post (sem_Pelota);	
+						}else{
+							if(sem_trywait(sem_Cancha1)==-1){ //trata de agarrar la cancha
+								if(errno == ETIMEDOUT){
+							}
+							printf("%d fallo agarrar la cancha\n", getpid());
+							//break;
+							}else{
+								//success						
+								printf("proceso %d agarra la cancha 1 y anota(equipo: %c)\n", getpid(), equipo);
+								*cancha1 = *cancha1 +1;	
+								sleep(.5);							
+								printf("%d suelta la cancha.\n", getpid());
+								sem_post (sem_Cancha1);	
+
+							}
+							sleep(1);	
+							printf("%dsuelta la pelota.\n", getpid());
+							sem_post (sem_Pelota);	
 						}
-						sleep(1);	
-						printf("suelta la pelota.\n");
-						sem_post (sem_Pelota);	
+						
 
 					}
 					//sem_wait(sem_Pelota);
@@ -145,7 +168,7 @@ int main(void)
 				*cancha2 =0;
 				//*isPlayersCreated = 1;
 			}
-			sleep(.1);
+			sleep(.5);
 		}
 	}while(PID > 0 && numeroHijos<10);
 	if(PID>0){
