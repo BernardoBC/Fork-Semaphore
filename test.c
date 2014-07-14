@@ -11,16 +11,16 @@
 #include <pthread.h>
 
 /* global variables*/ 
-int *marco1;
-int *marco2;
+int *cancha1;
+int *cancha2;
 int *isPlayersCreated;
 
 int *pelota;
 
 //semaphores
-sem_t sem_Pelota;
-sem_t sem_Marco1;
-sem_t sem_Marco2;
+sem_t *sem_Pelota;
+sem_t *sem_Cancha1;
+sem_t *sem_Cancha2;
 
 /*Memoria compartida*/
 int * shareResource(int cont, int *variable){
@@ -39,11 +39,13 @@ int * shareResource(int cont, int *variable){
 }
 
 int main(void)
-{
+{	
+	
 	time_t now;
 	pid_t children[10];
 	pid_t PID;
-	int numeroHijos = 0;/* 0-4 equipo ROJO, 5-9 equipo AZUL */
+	int numeroHijos = 0;	/* Para Padre: numero de hijos creados*/
+				/*Para Hijos: numero de jugador. 0-4 equipo A, 5-9 equipo B */
 
 	sem_t *sem;                   /*      synch semaphore         *//*shared */
 
@@ -51,16 +53,16 @@ int main(void)
 
 	/*Crea los recursos compartidos*/
     isPlayersCreated = shareResource(5, isPlayersCreated);
-    marco1 = shareResource(6, marco1);
-    marco2 = shareResource(7,marco2);
-    pelota = shareResource(8,marco2);    
+    cancha1 = shareResource(6, cancha1);
+    cancha2 = shareResource(7,cancha2);
+    pelota = shareResource(8,pelota);    
 
     
 
     /*semaphores*/
     sem_Pelota = sem_open ("pSem", O_CREAT | O_EXCL, 0644, 1); 
-    sem_Marco1 = sem_open ("pSem", O_CREAT | O_EXCL, 0644, 1);
-    sem_Marco2 = sem_open ("pSem", O_CREAT | O_EXCL, 0644, 1);
+    sem_Cancha1 = sem_open ("pSem2", O_CREAT | O_EXCL, 0644, 1);
+    sem_Cancha2 = sem_open ("pSem3", O_CREAT | O_EXCL, 0644, 1);
     /* name of semaphore is "pSem", semaphore is reached using this name */
     sem_unlink ("pSem");      
     /* unlink prevents the semaphore existing forever */
@@ -75,47 +77,73 @@ int main(void)
 		}
 
 		// childCreation was successful
-		else if(PID == 0){ 
+		else if(PID == 0){
+		char equipo;
+		if(numeroHijos<5){
+			equipo = 'A';
+		}else{equipo = 'B';}
+	        printf("Child Process :: PID = %d, equipo = %c\n", getpid(),equipo);
+		*isPlayersCreated = *isPlayersCreated + 1;
+		//printf("%d\n",*isPlayersCreated);
 
-	        printf("Child Process :: PID = %d\n", getpid());
-	        while(*isPlayersCreated==0){
-	        	pthread_yield();
-	        }	
-	        sleep(500);
-	        while(1){
-	        	srand(time(NULL));
-	        	sleep(rand()%5);
-	        	/*Region Critica*/
-	        	sem_wait(sem_Pelota);
-	        	/*aqui agregar codigo de region critica*/
-	        	sem_post (sem);
-
+		/*Espera para comienzo de partido*/
+		while(*isPlayersCreated!=10){
+			//printf("%d\n",*isPlayersCreated);
+			//sleep(3);
+			pthread_yield();
+		}
+		while(1){
+			int ran;
+    			ran = rand() % 10;
+			sleep(ran+5);			
+				if(*pelota == 0){
+					/*Region Critica Pelota*/
+					sem_wait(sem_Pelota);
+					/*aqui agregar codigo de region critica*/
+					printf("proceso %d en tiene la pelota (equipo: %c)\n", getpid(), equipo);
+					*pelota = 1;
+					sleep(2);
+					sem_post (sem_Pelota);
+					printf("proceso %d Anota\n", getpid());
+					if(numeroHijos<5){
+						*cancha2 = *cancha2 +1;
+					}else{
+						*cancha1 = *cancha1 +1;
+					}
+					*pelota = 0;			
+					
+				}
+				
+			
+			
+		}
+	              	
 	        }
-	        //jugar();        
-	        
-	        
-	        
-	        /*Duerme al proceso hasta que todos los procesos hayan sido creados*/	                
-			//exit(0);
-			//marco1++;
-			//sleep(1);
-	        	
-	    }
 
 	    // Parent
 	    else if(PID > 0){    	       	
 			children[numeroHijos] = PID;
-			numeroHijos++;			
-			*marco1 = *marco1 + 2;
-			*marco2 = *marco2 + 1;
+			numeroHijos++;
 			if(numeroHijos == 10){
-				*isPlayersCreated = 1;
+				*cancha1 =0;
+				*cancha2 =0;
+				//*isPlayersCreated = 1;
 			}
+			sleep(.1);
 		}
 	}while(PID > 0 && numeroHijos<10);
 	if(PID>0){
-		printf("Arranca el partido!\n");
-		sleep(300);
+		//printf("Arranca el partido!\n",*isPlayersCreated);
+		int timer = 300;
+		while(timer!=0){
+		sleep(1);
+		if((timer%30)==0){
+			printf(":: Marcador\n:: Equipo A: %d Equipo B: %d\n:: Tiempo Restante: %d\n",*cancha2,*cancha1,timer);
+		}
+		timer--;
+		}
+		//wait(NULL);
+		printf("matando hijos\n");
 		int i =0;	
 		while(i<10){
 			kill(children[i],SIGTERM);
