@@ -82,7 +82,7 @@ int main(void)
 			if(numeroHijos<5){
 				equipo = 'A';
 			}else{equipo = 'B';}
-		    printf("Child Process :: PID = %d, equipo = %c, jugador # = %d\n", getpid(),equipo,numeroHijos);
+		    printf("Child Process :: PID = %d, equipo = %c, jugador # = %d, PPID = %d\n", getpid(),equipo,numeroHijos, getppid());
 			*isPlayersCreated = *isPlayersCreated + 1;
 
 			/*Espera hasta que todos los procesos hijos sean creados para comienzo de partido*/
@@ -92,10 +92,13 @@ int main(void)
 
 			/*Loop de partido*/
 			while(1){
+
 				/*Tiempo aleatorio para tratar de agarrar la pelota*/
 				int ran;
 	    		ran = rand() % 15;
-				sleep(ran+5);			
+				sleep(ran+5);
+
+
 				if(*pelota == 0){
 					/*Region Critica Pelota*/
 					if(sem_trywait(sem_Pelota)==-1){ //waiting for result 
@@ -106,6 +109,7 @@ int main(void)
 					}else{
 						//success						
 						printf("proceso %d tiene la pelota (equipo: %c)\n", getpid(), equipo);
+						*pelota =1;
 						sleep(1);
 						int intento=0;
 						while(intento<3){
@@ -148,7 +152,10 @@ int main(void)
 						}
 
 						sleep(1);	
-						printf("%d suelta la pelota.\n\n", getpid());
+						printf("%d suelta la pelota.\n", getpid());
+						printf(":: Marcador\n:: Equipo A: %d Equipo B: %d\n-----------------------\n\n",*cancha2,*cancha1);
+			
+						*pelota = 0;
 						sem_post (sem_Pelota);	
 					}					
 				}				
@@ -170,6 +177,7 @@ int main(void)
 		//printf("Arranca el partido!\n",*isPlayersCreated);
 		int timer = 300;/*300 segundos == 5 minutos*/
 		while(timer!=0){
+
 			sleep(1);
 			int min = timer/60;
 			int sec = timer%60;	
