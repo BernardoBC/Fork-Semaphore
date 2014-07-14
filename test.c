@@ -82,7 +82,7 @@ int main(void)
 		if(numeroHijos<5){
 			equipo = 'A';
 		}else{equipo = 'B';}
-	        printf("Child Process :: PID = %d, equipo = %c\n", getpid(),equipo);
+	        printf("Child Process :: PID = %d, equipo = %c jugador # = %d\n", getpid(),equipo,numeroHijos);
 		*isPlayersCreated = *isPlayersCreated + 1;
 		//printf("%d\n",*isPlayersCreated);
 
@@ -101,12 +101,15 @@ int main(void)
 					if(sem_trywait(sem_Pelota)==-1){ //waiting for result 
 						if(errno == ETIMEDOUT){
 					}
-					printf("%d fallo\n", getpid());
+					printf("%d fallo agarrar la pelota\n", getpid());
 					//break;
 					}else{
 						//success						
-						printf("proceso %d en tiene la pelota (equipo: %c)\n", getpid(), equipo);	
-						sem_post (sem_Pelota);				
+						printf("proceso %d en tiene la pelota (equipo: %c)\n", getpid(), equipo);
+						sleep(1);	
+						printf("suelta la pelota.\n");
+						sem_post (sem_Pelota);	
+
 					}
 					//sem_wait(sem_Pelota);
 					/*aqui agregar codigo de region critica*/						
