@@ -1,3 +1,11 @@
+/*
+*	Fork + Semaphores
+*	Bernardo Bonilla Canales
+*	Carnet: 2012014018
+*	Entrega: 17 Julio 2014
+*/
+
+
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/shm.h>
