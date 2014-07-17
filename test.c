@@ -30,8 +30,8 @@ sem_t *sem_Pelota;
 sem_t *sem_Cancha1;
 sem_t *sem_Cancha2;
 
-/*Función de Memoria compartida*/
-int * sharedResource(int cont, int *variable){ 
+/*Metodo de Memoria compartida*/
+int * recursoCompartido(int cont, int *variable){ 
 	key_t shmkey;
 	int shmid;
 	shmkey = ftok ("/dev/null", cont);       /* nombre y numero para SharedMemory Key "shmkey" */
@@ -60,10 +60,10 @@ int main(void)
 	int *p;			/*      shared variable         *//*shared */	
 
 	/*Crea los recursos compartidos*/
-    isPlayersCreated = sharedResource(5, isPlayersCreated);
-    cancha1 = sharedResource(6, cancha1);
-    cancha2 = sharedResource(7,cancha2);
-    pelota = sharedResource(8,pelota);    
+    isPlayersCreated = recursoCompartido(5, isPlayersCreated);
+    cancha1 = recursoCompartido(6, cancha1);
+    cancha2 = recursoCompartido(7,cancha2);
+    pelota = recursoCompartido(8,pelota);    
 
     
 
