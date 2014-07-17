@@ -1,3 +1,5 @@
-# README #
+# Fork + Semaphore #
 
-### What is this repository for? ###
+### Como generar ###
+
+$ gcc test.c -o test -pthread
