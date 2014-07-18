@@ -55,10 +55,6 @@ int main(void)
 	int numeroHijos = 0;	/* Para Padre: numero de hijos creados*/
 							/*Para Hijos: numero de jugador. 0-4 equipo A, 5-9 equipo B */
 
-	sem_t *sem;		/*      synch semaphore         *//*shared */
-
-	int *p;			/*      shared variable         *//*shared */	
-
 	/*Crea los recursos compartidos*/
     isPlayersCreated = recursoCompartido(5, isPlayersCreated);
     cancha1 = recursoCompartido(6, cancha1);
