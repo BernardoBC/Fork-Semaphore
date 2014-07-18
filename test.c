@@ -106,10 +106,7 @@ int main(void)
 				if(*pelota == 0){
 					/*Region Critica Pelota*/
 					if(sem_trywait(sem_Pelota)==-1){ //waiting for result 
-						if(errno == ETIMEDOUT){
-					}
-					//printf("%d fallo agarrar la pelota\n", getpid());
-					//break;
+						if(errno == ETIMEDOUT){}
 					}else{
 						//success						
 						printf("proceso %d tiene la pelota (equipo: %c)\n", getpid(), equipo);
