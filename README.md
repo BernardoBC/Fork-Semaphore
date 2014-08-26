@@ -2,4 +2,4 @@
 
 ### Como generar ###
 
-$ gcc test.c -o test -pthread
+$ gcc fork-semaphore.c -o fork-semaphore -pthread
